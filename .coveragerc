@@ -1,0 +1,16 @@
+[paths]
+source =
+   src/usenet_utils
+   */site-packages/usenet_utils
+
+[run]
+branch = true
+source =
+    usenet_utils
+    tests
+parallel = true
+
+[report]
+show_missing = true
+precision = 2
+omit = *migrations*
