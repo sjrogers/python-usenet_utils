@@ -1,18 +1,24 @@
 import os
+from glob import iglob
+
 from lxml import objectify
 
-def scan_folder(dir_path):
-    nzb_dir = os.path.realpath(dir_path)
-    nzbs = [f for f in os.listdir(nzb_dir) if f.endswith(".nzb")]
-    for nzb in nzbs:
-        yield os.path.join(nzb_dir, nzb)
+def nzb_scan(*directories):
+    # helper utility taking vararg of directory paths to scan for NZB files
+    for d in directories:
+        prefix_path = os.path.realpath(d)
+        glob_path = os.path.join(prefix_path, "*.nzb")
+        yield from iglob(glob_path)
 
 class NzbTarget:
+    """
+    segmented file as described by NZB prior to reassembly
+    """
     groups = []
     segments = []
 
-    def __init__(self, elem):
-        self._elem = elem
+    def __init__(self, el):
+        self._elem = el
 
     @property
     def attrib(self):
@@ -41,11 +47,24 @@ class NzbFile(object):
         # extract files
         file_mask = dtd_namespace + "file"
         for f in root.findall(file_mask):
-            target = NzbTarget(elem = f)
+            target = NzbTarget(el = f)
             groups, segments = f.getchildren()
             target.groups = [g for g in groups.getchildren()]
             target.segments = [s for s in segments.getchildren()]
             self.files.append( target )
 
+
     def __repr__(self):
-        return os.path.basename(self.nzb_path)
+
+        TRUNCATE_AT_LENGTH = 20
+        fmt_str = "<NzbFile: {} ({})>"
+        basename = os.path.basename(self.nzb_path)
+        title, _ = os.path.splitext(basename)
+
+        if len(title) > TRUNCATE_AT_LENGTH:
+            slice_index = TRUNCATE_AT_LENGTH - 3
+            title = title[:slice_index] + '...'
+
+        file_count = len(self.files)
+
+        return fmt_str.format(title, file_count)
