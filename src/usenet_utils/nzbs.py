@@ -7,7 +7,7 @@ def scan_folder(dir_path):
     for nzb in nzbs:
         yield os.path.join(nzb_dir, nzb)
 
-class FileTarget:
+class NzbTarget:
     groups = []
     segments = []
 
@@ -19,7 +19,7 @@ class FileTarget:
         return self._elem.attrib
 
     def __repr__(self):
-        fmt_str = "<FileTarget: {} groups, {} segments>"
+        fmt_str = "<NzbTarget: {} groups, {} segments>"
         return fmt_str.format(len(self.groups),
                               len(self.segments))
 
@@ -41,7 +41,7 @@ class NzbFile(object):
         # extract files
         file_mask = dtd_namespace + "file"
         for f in root.findall(file_mask):
-            target = FileTarget(elem = f)
+            target = NzbTarget(elem = f)
             groups, segments = f.getchildren()
             target.groups = [g for g in groups.getchildren()]
             target.segments = [s for s in segments.getchildren()]
