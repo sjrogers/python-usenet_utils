@@ -1,14 +1,15 @@
 import os
+import lxml
 from glob import iglob
-
-from lxml import objectify
 
 def nzb_scan(*directories):
     # helper utility taking vararg of directory paths to scan for NZB files
     for d in directories:
         prefix_path = os.path.realpath(d)
         glob_path = os.path.join(prefix_path, "*.nzb")
-        yield from iglob(glob_path)
+        # excluding 'yield from' for backwards compatibility
+        for entry in iglob(glob_path):
+            yield entry
 
 class NzbTarget:
     """
@@ -38,7 +39,7 @@ class NzbFile(object):
         self.load()
 
     def load(self):
-        tree = objectify.parse(self.nzb_path)
+        tree = lxml.objectify.parse(self.nzb_path)
         root = tree.getroot()
         dtd_namespace = "".join(['{', root.nsmap[None], '}'])
 
